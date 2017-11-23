@@ -1,0 +1,153 @@
+        /*
+        File file("....");
+        long size = file.getSize();
+        BinaryFileReader binReader;
+        BinaryFileReader::Status status = binReader.open(file);
+        if (status == BinaryFileReader::Success) {
+            char* buffer = new char[size];
+            binReader.read(buffer, size);
+        }
+        */
+
+
+#include <thread>
+#include <functional>
+/*
+class Queue {
+public:
+    void add(std::function<> func()) {
+        func();
+    }
+};
+class Action {
+public:
+    Action() : m_thread([this] { while(m_shouldLoop) { }}){
+        printf("Action ctor\n");
+    }
+
+    ~Action() {
+        printf("Action dtor\n");
+        m_shouldLoop = false;
+        m_thread.join();
+        printf("Action dtor done\n");
+    }
+
+private:
+    bool m_shouldLoop = true;
+    std::thread m_thread;
+};
+*/
+
+
+
+struct PixelPosition {
+    float x, y, z;
+    };
+
+/*
+ *  setup up source pixel information
+  *  setup up destionation pixel information (allocate structure)
+   *  for each frame:
+    *   update pixel dest struct
+     *   calculate new delta
+      *   x += delta * time
+       *   update time;
+        */
+	const float TIME = 60.0f * 5.0f;
+	const float STEP = 1.0f / TIME;
+	class ParticleSystem {
+	public:
+	    ParticleSystem() {
+	            m_time = 0.0f;
+		        }
+
+    void setupSource(Image* pImage) {
+            m_sourceCount = countPixels(pImage);
+	            m_pSource = new PixelPosition[m_sourceCount];
+		            setPixelPosition(pImage, m_pSource);
+			        }
+
+    void setupDestination(Image* pImage) {
+            m_destinationCount = countPixels(pImage);
+	            m_pDestination = new PixelPosition[m_destinationCount];
+		        }
+
+    void updateDestination(Image* pImage) {
+            setPixelPosition(pImage, m_pDestination);
+	        }
+
+    void updateSource() {
+            int counter = m_sourceCount;
+	            if (counter > m_destinationCount) {
+		                counter = m_destinationCount;
+				        }
+
+        float t = m_time;
+	        for (int i = 0; i < counter; i++) {
+		            PixelPosition* ps = &m_pSource[i];
+			                PixelPosition* pd = &m_pDestination[i];
+					            float dx = (pd->x - ps->x) / TIME;
+						                float dy = (pd->y - ps->y) / TIME;
+								            float dz = (pd->z - ps->z) / TIME;
+									                ps->x += t * dx;
+											            ps->y += t * dy;
+												                ps->z += t * dz;
+														        }
+															    }
+
+    void update() {
+            m_time += STEP;
+	        }
+
+    ~ParticleSystem() {
+            delete[] m_pSource;
+	            m_pSource = nullptr;
+
+        delete[] m_pDestination;
+	        m_pDestination = nullptr;
+		    }
+
+private:
+    PixelPosition* m_pSource = nullptr;
+        PixelPosition* m_pDestination = nullptr;
+	    float m_time = 0.0f;
+	        int m_stepCount = 60 * 5;
+		    int m_sourceCount = 0;
+		        int m_destinationCount = 0;
+			    int countPixels(Image* image) {
+			            unsigned char* data = image->data;
+				            int width = image->width;
+					            int height = image->height;
+						            int pixelCount = 0;
+							            for (int y = 0; y < image->height; y++) {
+								                int h = y * width;
+										            for (int x = 0; x < image->width; x++) {
+											                    unsigned char pixel =  data[x + h];
+													                    if (pixel > 0) {
+															                        pixelCount++;
+																		                }
+																				            }
+																					            }
+																						            return pixelCount;
+																							        }
+
+    void setPixelPosition(Image* pImage, PixelPosition* pPixelPosition) {
+            unsigned char* data = pImage->data;
+	            int width = pImage->width;
+		            int height = pImage->height;
+			            int index = 0;
+				            for (int y = 0; y < pImage->height; y++) {
+					                int h = y * width;
+							            for (int x = 0; x < pImage->width; x++) {
+								                    unsigned char pixel =  data[x + h];
+										                    if (pixel == 0) {
+												                        continue;
+															                }
+																	                pPixelPosition[pixel].x = x;
+																			                pPixelPosition[pixel].y = y;
+																					                pPixelPosition[pixel].z = 0.0f;
+																							            }
+																								            }
+																									        }
+																										};
+

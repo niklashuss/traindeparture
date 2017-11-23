@@ -1,0 +1,24 @@
+<REQUEST>
+    <LOGIN authenticationkey="@"/>
+    <QUERY objecttype="TrainAnnouncement" orderby="AdvertisedTimeAtLocation">
+        <FILTER>
+            <AND>
+                <EQ name="ActivityType" value="Avgang"/>
+                <EQ name="Advertised" value="true"/>
+                <EQ name="Canceled" value="false"/>
+                <EQ name="LocationSignature" value="Fv"/>
+                <OR>
+                    <AND>
+                        <GT name="AdvertisedTimeAtLocation" value="$dateadd(-00:5:00)" />
+                        <LT name="AdvertisedTimeAtLocation" value="$dateadd(10:00:00)" />
+                    </AND>
+                </OR>
+            </AND>
+        </FILTER>
+        <INCLUDE>AdvertisedTimeAtLocation</INCLUDE>
+        <INCLUDE>EstimatedTimeAtLocation</INCLUDE>
+        <INCLUDE>FromLocation</INCLUDE>
+        <INCLUDE>ToLocation</INCLUDE>
+    </QUERY>
+</REQUEST>
+
