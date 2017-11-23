@@ -43,19 +43,26 @@ void update_time(Font& font, Text& time, const char* text, Application* pApplica
 }
 
 const char* FONT_NAME = "../res/FreeSansBold.ttf";
+const char* AUTH_KEY_NAME = "../res/auth_key.txt";
 const int UPDATE_TIME = 5 * 60;
 
 class Game : public Application {
 public:
     void onInit() {
         m_newTrainAnnouncementFlag = false;
-        File f;
-        int size = f.size("../res/auth_key.txt");
-        char buffer[size + 1];
-        memset(buffer, 0, size + 1);
-        f.open("../res/auth_key.txt", FileMode::Read);
-        f.read(buffer, size);
-        f.close();
+        bool authKeyFileExists = File::exists(AUTH_KEY_NAME);
+        char buffer[33];
+        if (authKeyFileExists) {
+            File f;
+            memset(buffer, 0, sizeof(buffer)+ 1);
+            f.open(AUTH_KEY_NAME, FileMode::Read);
+            f.read(buffer, 32);
+            f.close();
+        } else {
+            printf("Error: Missing authentication key file!");
+            memcpy(buffer, "missing key", 11);
+        }
+
         std::string authKey = buffer;
         m_pDownloader = new TrainAnnouncementDownloader(authKey);
         m_pDownloader->download(m_newTrainAnnouncement, &m_newTrainAnnouncementFlag);
