@@ -42,7 +42,7 @@ void update_time(Font& font, Text& time, const char* text, Application* pApplica
     time.pTexture->update(time.rgb);
 }
 
-const char* FONT_NAME = "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf";
+const char* FONT_NAME = "../res/FreeSansBold.ttf";
 const int UPDATE_TIME = 5 * 60;
 
 class Game : public Application {
