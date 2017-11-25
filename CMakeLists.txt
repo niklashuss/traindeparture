@@ -22,7 +22,6 @@ set(SOURCES
         src/image.cpp
         src/renderer.cpp
         src/application.cpp
-        src/stopwatch.cpp
         ext_src/tinyxml2/tinyxml2.cpp
         src/main.cpp
         src/client.cpp src/client.h src/webclient.cpp src/webclient.h src/trainannouncementparser.cpp src/trainannouncementparser.h src/trainannouncement.h src/trainannouncementdownloader.cpp src/trainannouncementdownloader.h src/texture.cpp src/texture.h)

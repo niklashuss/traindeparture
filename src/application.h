@@ -33,10 +33,7 @@ private:
     SDL_Window* m_pWindow = nullptr;
     SDL_Renderer* m_pRenderer = nullptr;
     Status m_status = Status::Success;
-    int m_width = 800;
-    int m_height = 480;
     bool m_shouldLoop = true;
 
     void handleKeyEvent(SDL_KeyboardEvent& keyEvent);
-
 };

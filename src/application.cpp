@@ -1,6 +1,5 @@
 #include "application.h"
 #include <stdio.h>
-#include "stopwatch.h"
 #include "renderer.h"
 
 Application::Application() : m_status(Application::Status::Success) {
@@ -26,9 +25,7 @@ Application::~Application() {
 Application::Status Application::create(int width, int height) {
     if (m_status != Status::Success) {
         return m_status;
-    }
-    m_width = width;
-    m_height = height;
+    }git
 
     int flags = SDL_WINDOW_OPENGL;
     m_pWindow = SDL_CreateWindow("Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
@@ -59,27 +56,15 @@ void Application::handleKeyEvent(SDL_KeyboardEvent& keyEvent)
 void Application::execute() {
     SDL_Event event;
     onInit();
-    StopWatch timer;
-    timer.start();
-    long timeAccumulator = 0;
     while (m_shouldLoop) {
-        timer.stop();
-        long time = timer.resultAsMilliseconds();
-        timeAccumulator += time;
-        timer.start();
-        // update 100 Hz
-        while (timeAccumulator >= 10)
-        {
-            SDL_PollEvent(&event);
-            handleKeyEvent(event.key);
-            if (event.type == SDL_QUIT) {
-                m_shouldLoop = false;
-                break;
-            }
-
-            onUpdate();
-            timeAccumulator -= 16;
+        SDL_PollEvent(&event);
+        handleKeyEvent(event.key);
+        if (event.type == SDL_QUIT) {
+            m_shouldLoop = false;
+            break;
         }
+
+        onUpdate();
         SDL_SetRenderDrawColor(m_pRenderer, 0x88, 0x88, 0xff, 0x00);
         SDL_RenderClear(m_pRenderer);
         onRender();
