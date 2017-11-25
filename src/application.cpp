@@ -25,7 +25,7 @@ Application::~Application() {
 Application::Status Application::create(int width, int height) {
     if (m_status != Status::Success) {
         return m_status;
-    }git
+    }
 
     int flags = SDL_WINDOW_OPENGL;
     m_pWindow = SDL_CreateWindow("Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
