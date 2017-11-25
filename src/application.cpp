@@ -78,8 +78,104 @@ void Application::render(Texture* pTexture, int x, int y) {
     renderer_render(m_pRenderer, pTexture, x, y);
 }
 
+void formatAsString(int format) {
+    switch(format) {
+        case SDL_PIXELFORMAT_UNKNOWN:
+            printf("SDL_PIXELFORMAT_UNKNOWN\n");
+            break;
+        case SDL_PIXELFORMAT_RGB332:
+            printf("SDL_PIXELFORMAT_RGB332\n");
+            break;
+        case SDL_PIXELFORMAT_RGB444:
+            printf("SDL_PIXELFORMAT_RGB444\n");
+            break;
+        case SDL_PIXELFORMAT_RGB555:
+            printf("SDL_PIXELFORMAT_RGB555\n");
+            break;
+        case SDL_PIXELFORMAT_BGR555:
+            printf("SDL_PIXELFORMAT_BGR555\n");
+            break;
+        case SDL_PIXELFORMAT_ARGB4444:
+            printf("SDL_PIXELFORMAT_ARGB4444\n");
+            break;
+        case SDL_PIXELFORMAT_RGBA4444:
+            printf("SDL_PIXELFORMAT_RGBA4444\n");
+            break;
+        case SDL_PIXELFORMAT_ABGR4444:
+            printf("SDL_PIXELFORMAT_ABGR4444\n");
+            break;
+        case SDL_PIXELFORMAT_BGRA4444:
+            printf("SDL_PIXELFORMAT_BGRA4444\n");
+            break;
+        case SDL_PIXELFORMAT_ARGB1555:
+            printf("SDL_PIXELFORMAT_ARGB1555\n");
+            break;
+        case SDL_PIXELFORMAT_RGBA5551:
+            printf("SDL_PIXELFORMAT_RGBA5551\n");
+            break;
+        case SDL_PIXELFORMAT_ABGR1555:
+            printf("SDL_PIXELFORMAT_ABGR1555\n");
+            break;
+        case SDL_PIXELFORMAT_BGRA5551:
+            printf("SDL_PIXELFORMAT_BGRA5551\n");
+            break;
+        case SDL_PIXELFORMAT_RGB565:
+            printf("SDL_PIXELFORMAT_RGB565\n");
+            break;
+        case SDL_PIXELFORMAT_BGR565:
+            printf("SDL_PIXELFORMAT_BGR565\n");
+            break;
+        case SDL_PIXELFORMAT_RGB24:
+            printf("SDL_PIXELFORMAT_RGB24\n");
+            break;
+        case SDL_PIXELFORMAT_BGR24:
+            printf("SDL_PIXELFORMAT_BGR24\n");
+            break;
+        case SDL_PIXELFORMAT_RGB888:
+            printf("SDL_PIXELFORMAT_RGB888\n");
+            break;
+        case SDL_PIXELFORMAT_RGBX8888:
+            printf("SDL_PIXELFORMAT_RGBX8888\n");
+            break;
+        case SDL_PIXELFORMAT_BGR888:
+            printf("SDL_PIXELFORMAT_BGR888\n");
+            break;
+        case SDL_PIXELFORMAT_BGRX8888:
+            printf("SDL_PIXELFORMAT_BGRX8888\n");
+            break;
+        case SDL_PIXELFORMAT_ARGB8888:
+            printf("SDL_PIXELFORMAT_ARGB8888\n");
+            break;
+        case SDL_PIXELFORMAT_RGBA8888:
+            printf("SDL_PIXELFORMAT_RGBA8888\n");
+            break;
+        case SDL_PIXELFORMAT_ABGR8888:
+            printf("SDL_PIXELFORMAT_ABGR8888\n");
+            break;
+        case SDL_PIXELFORMAT_BGRA8888:
+            printf("SDL_PIXELFORMAT_BGRA8888\n");
+            break;
+        case SDL_PIXELFORMAT_ARGB2101010:
+            printf("SDL_PIXELFORMAT_ARGB2101010\n");
+            break;
+        default:
+            printf("Not covered: %d\n", format);
+            break;
+    }
+}
+
+
 Texture* Application::createStreamingTexture(int width, int height) {
+    int requestFormat = SDL_PIXELFORMAT_ABGR8888;
+    printf("Requested format: ");
+    formatAsString(requestFormat);
     SDL_Texture* pTexture = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, width, height);
+    unsigned int format;
+    int access, w, h;
+    SDL_QueryTexture(pTexture, &format, &access, &w, &h);
+    printf("Create streaming picture: %x, format=%d, access=%d, w=%d, h=%d\n", pTexture, format, access, w, h);
+    printf("Got format: ");
+    formatAsString(format);
     return new Texture(pTexture);
 }
 

@@ -45,6 +45,15 @@ void image_copy(Image& source, Image& destination)
             destination.data[i] = source.data[i];
         }
     }
+    else if (source.bpp == 1 && destination.bpp == 2)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            char color = source.data[i];
+            destination.data[i * 2 + 0] = color;
+            destination.data[i * 2 + 1] = color;
+        }
+    }
     else if (source.bpp == 1 && destination.bpp == 3)
     {
         for (int i = 0; i < size; i++)
