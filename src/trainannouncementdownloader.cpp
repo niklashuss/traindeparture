@@ -2,6 +2,7 @@
 #include "file.h"
 #include "trainannouncementparser.h"
 #include "webclient.h"
+#include <chrono>
 
 static bool loadQuery(const char* pPath, std::string& query, std::string& authenticateKey) {
     printf("Loading query\n");
@@ -44,7 +45,16 @@ static bool loadQuery(const char* pPath, std::string& query, std::string& authen
 TrainAnnouncementDownloader::TrainAnnouncementDownloader(std::string& authenticateKey, IDownloadCallback* pCallback)
         : m_authenticateKey(authenticateKey)
         , m_pDownloadCallback(pCallback)
-        , m_isDownloading(false) {
+        , m_isDownloading(false)
+        , m_thread(&TrainAnnouncementDownloader::run, this) {
+}
+
+TrainAnnouncementDownloader::~TrainAnnouncementDownloader() {
+    printf("TrainAnnouncementDownloader::stopping download thread\n");
+    m_waitForDownload.notify_one();
+    m_doLoop = false;
+    m_thread.join();
+    printf("TrainAnnouncementDownloader::download thread is finished\n");
 }
 
 void TrainAnnouncementDownloader::download() {
@@ -54,7 +64,20 @@ void TrainAnnouncementDownloader::download() {
         return;
     }
     m_isDownloading = true;
-    m_thread = std::thread(&TrainAnnouncementDownloader::downloadTrainAnnouncement, this);
+    m_waitForDownload.notify_one();
+}
+
+void TrainAnnouncementDownloader::run() {
+    while(m_doLoop) {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_waitForDownload.wait_for(lock, std::chrono::milliseconds(100));
+        if (!m_isDownloading) {
+            continue;
+        }
+        m_isDownloading = true;
+        downloadTrainAnnouncement();
+        m_isDownloading = false;
+    }
 }
 
 bool TrainAnnouncementDownloader::downloadTrainAnnouncement() {
