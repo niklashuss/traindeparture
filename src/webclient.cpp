@@ -48,18 +48,15 @@ WebClient::Status WebClient::sendRequest(std::string& request, std::string& resp
     std::string all = header;
     all += request;
     int length = m_client.send(all.c_str(), all.size());
-    printf("Sent %d bytes\n", length);
 
     memset(resultBuffer, 0, MAX_RESULT_BUFFER_SIZE);
 
-    printf("Recieving data\n");
     int size = 0;
     if (length > 0) {
         while ((length = m_client.recieve(resultBuffer + size, MAX_RESULT_BUFFER_SIZE)) > 0) {
             size += length;
         }
     }
-    printf("[%s]\n", resultBuffer);
 
     std::vector<std::string> lines2;
     int start = 0;
