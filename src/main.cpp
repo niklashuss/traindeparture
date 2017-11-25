@@ -4,11 +4,7 @@
 #include "font.h"
 #include "file.h"
 #include <vector>
-#include "actionobject.h"
 #include "trainannouncementdownloader.h"
-#include "image.h"
-#include <chrono>
-#include "texture.h"
 #include <sstream>
 
 using namespace std::chrono;
@@ -46,10 +42,9 @@ const char* FONT_NAME = "../res/FreeSansBold.ttf";
 const char* AUTH_KEY_NAME = "../res/auth_key.txt";
 const int UPDATE_TIME = 5 * 60;
 
-class Game : public Application {
+class Game : public Application, IDownloadCallback {
 public:
     void onInit() {
-        m_newTrainAnnouncementFlag = false;
         bool authKeyFileExists = File::exists(AUTH_KEY_NAME);
         char buffer[33];
         if (authKeyFileExists) {
@@ -59,13 +54,13 @@ public:
             f.read(buffer, 32);
             f.close();
         } else {
-            printf("Error: Missing authentication key file!");
+            printf("Error: Missing authentication key file!\n");
             memcpy(buffer, "missing key", 11);
         }
 
         std::string authKey = buffer;
-        m_pDownloader = new TrainAnnouncementDownloader(authKey);
-        m_pDownloader->download(m_newTrainAnnouncement, &m_newTrainAnnouncementFlag);
+        m_pDownloader = new TrainAnnouncementDownloader(authKey, this);
+        m_pDownloader->download();
 
         renderer_init();
 
@@ -120,19 +115,7 @@ public:
         long timeDiff = std::chrono::duration_cast<std::chrono::seconds>(currentTime - m_startTime).count();
         if (timeDiff > UPDATE_TIME) {
             m_startTime = std::chrono::steady_clock::now();
-            m_newTrainAnnouncementFlag = false;
-            m_pDownloader->download(m_newTrainAnnouncement, &m_newTrainAnnouncementFlag);
-            printf("Count of array = %lu\n", m_newTrainAnnouncement.size());
-        }
-        if (m_newTrainAnnouncementFlag) {
-            m_lastDownloadTime = std::chrono::steady_clock::now();
-            m_currentTrainAnnouncement.clear();
-            for (TrainAnnouncement& announcement : m_newTrainAnnouncement) {
-                m_currentTrainAnnouncement.push_back(announcement);
-            }
-            refreshTime();
-            m_newTrainAnnouncement.clear();
-            m_newTrainAnnouncementFlag = false;
+            m_pDownloader->download();
         }
 
         renderer_set_clear_color(1.0f, 0.5f, 0.1f, 1.0f);
@@ -175,6 +158,25 @@ public:
     {
     }
 
+    void onDownloadFinished(std::vector<TrainAnnouncement>& announcements) {
+        m_lastDownloadTime = std::chrono::steady_clock::now();
+        m_currentTrainAnnouncement.clear();
+        int count = 3;
+        for (TrainAnnouncement& announcement : announcements) {
+            if (count == 0)
+            {
+                break;
+            }
+            m_currentTrainAnnouncement.push_back(announcement);
+            count--;
+        }
+        refreshTime();
+    }
+
+    void onDownloadFailed(std::string& message) {
+        printf("Error during download: %s\n", message.c_str());
+    }
+
 private:
     Text* m_advertisedTexts[3];
     Text* m_estimatedTexts[3];
@@ -184,12 +186,10 @@ private:
     Font m_mediumFont;
     Font m_countDownFont;
     std::vector<TrainAnnouncement> m_currentTrainAnnouncement;
-    std::vector<TrainAnnouncement> m_newTrainAnnouncement;
     TrainAnnouncementDownloader* m_pDownloader;
     steady_clock::time_point m_startTime;
     steady_clock::time_point m_lastUpdate;
     steady_clock::time_point m_lastDownloadTime;
-    bool m_newTrainAnnouncementFlag = false;
     std::string m_currentTime;
 
     Text* createText(int x, int y, int width, int height, int color, Font& font, const char* text) {

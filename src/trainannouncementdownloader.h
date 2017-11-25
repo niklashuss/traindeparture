@@ -1,17 +1,28 @@
 #pragma once
 
-#include "actionobject.h"
 #include "trainannouncement.h"
 #include <vector>
+#include <thread>
+#include <atomic>
+
+class IDownloadCallback {
+public:
+    virtual void onDownloadFinished(std::vector<TrainAnnouncement>& announcements) = 0;
+    virtual void onDownloadFailed(std::string& message) = 0;
+
+private:
+};
 
 class TrainAnnouncementDownloader {
 public:
-    TrainAnnouncementDownloader(std::string& authenticateKey);
+    TrainAnnouncementDownloader(std::string& authenticateKey, IDownloadCallback* pDownloadCallback);
 
-    void download(std::vector<TrainAnnouncement>& newTrainAnnouncement, bool* pNewTrainAnnouncementFlag);
+    void download();
 
 private:
     std::string m_authenticateKey;
-    ActionObject m_actionObject;
-    void downloadTrainAnnouncement(std::vector<TrainAnnouncement>& newTrainAnnouncement, bool* pNewTrainAnnouncementFlag);
+    IDownloadCallback* m_pDownloadCallback = nullptr;
+    std::atomic_bool m_isDownloading;
+    std::thread m_thread;
+    bool downloadTrainAnnouncement();
 };

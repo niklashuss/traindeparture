@@ -1,15 +1,13 @@
 #include "trainannouncementdownloader.h"
-
-#include "actionobject.h"
 #include "file.h"
 #include "trainannouncementparser.h"
 #include "webclient.h"
 
 static bool loadQuery(const char* pPath, std::string& query, std::string& authenticateKey) {
-    printf("Path: %s\n", pPath);
-    printf("key: %s\n", authenticateKey.c_str());
+    printf("Loading query\n");
     if (!File::exists(pPath)) {
         query = "File not found";
+        printf("No query file found\n");
         return false;
     }
 
@@ -20,6 +18,7 @@ static bool loadQuery(const char* pPath, std::string& query, std::string& authen
     File f;
     if (!f.open(pPath, FileMode::Read)) {
         query = "Unable to open file";
+        printf("Unable to open file\n");
         return false;
     }
 
@@ -42,53 +41,72 @@ static bool loadQuery(const char* pPath, std::string& query, std::string& authen
     return true;
 }
 
-TrainAnnouncementDownloader::TrainAnnouncementDownloader(std::string& authenticateKey) : m_authenticateKey(authenticateKey) {
+TrainAnnouncementDownloader::TrainAnnouncementDownloader(std::string& authenticateKey, IDownloadCallback* pCallback)
+        : m_authenticateKey(authenticateKey)
+        , m_pDownloadCallback(pCallback)
+        , m_isDownloading(false) {
 }
 
-void TrainAnnouncementDownloader::download(std::vector<TrainAnnouncement>& newTrainAnnouncement, bool* pNewTrainAnnouncementFlag) {
-    m_actionObject.addMessage([this, &newTrainAnnouncement, pNewTrainAnnouncementFlag]() {
-        downloadTrainAnnouncement(newTrainAnnouncement, pNewTrainAnnouncementFlag);
-    });
+void TrainAnnouncementDownloader::download() {
+    printf("TrainAnnouncementDownloader::download()\n");
+    if (m_isDownloading) {
+        printf("Already a download in queue.\n");
+        return;
+    }
+    m_isDownloading = true;
+    m_thread = std::thread(&TrainAnnouncementDownloader::downloadTrainAnnouncement, this);
 }
 
-void TrainAnnouncementDownloader::downloadTrainAnnouncement(std::vector<TrainAnnouncement>& newTrainAnnouncement, bool* pNewTrainAnnouncementFlag) {
+bool TrainAnnouncementDownloader::downloadTrainAnnouncement() {
     printf("Downloading new train announcement\n");
+    if (m_pDownloadCallback == nullptr) {
+        printf("TrainAnnouncementDownloader:: No callback set\n");
+        m_isDownloading = false;
+        return false;
+    }
+
     const unsigned short PORT = 80;
     const char* ADDRESS = "api.trafikinfo.trafikverket.se";
     std::string content;
     loadQuery("../res/query_departures_frovi.txt", content, m_authenticateKey);
 
     WebClient webClient;
-    webClient.connect(ADDRESS, PORT);
-    std::string response;
-    WebClient::Status status = webClient.sendRequest(content, response);
-
-    std::vector<TrainAnnouncement> announcements;
-    TrainAnnouncementParser parser(response);
-
-    int counter = 0;
-    auto filter = [&counter](const TrainAnnouncement& announcement) {
-        if (counter == 4) {
+    WebClient::Status status = webClient.connect(ADDRESS, PORT);
+    switch (status) {
+        case WebClient::Status::SocketFailed: {
+            std::string message = "TrainAnnouncementDownloader:: SocketFailed";
+            m_pDownloadCallback->onDownloadFailed(message);
+            m_isDownloading = false;
             return false;
         }
 
+        case WebClient::Status::ConnectionFailed: {
+            std::string message = "TrainAnnouncementDownloader:: ConnectionFailed";
+            m_pDownloadCallback->onDownloadFailed(message);
+            m_isDownloading = false;
+            return false;
+        }
+    }
+
+    std::string response;
+    webClient.sendRequest(content, response);
+
+    TrainAnnouncementParser parser(response);
+
+    std::vector<TrainAnnouncement> announcements;
+    auto filter = [](const TrainAnnouncement& announcement) {
         std::string to = announcement.toLocation;
         if (to == "Lå" ||
             to == "Hpbg" ||
             to == "Öb" ||
             to == "My") {
-            counter++;
             return true;
         }
         return false;
     };
     parser.parse(announcements, filter);
-    for (const TrainAnnouncement& announcement :  announcements) {
-//            printf("Advertised: %s\n", announcement.advertisedTime.c_str());
-//            printf("Estimated: %s\n", announcement.estimatedTime.c_str());
-//            printf("From location: %s\n", announcement.fromLocation.c_str());
-//            printf("To location: %s\n", announcement.toLocation.c_str());
-        newTrainAnnouncement.push_back(announcement);
-    }
-    *pNewTrainAnnouncementFlag = true;
+
+    printf("TrainAnnouncementDownloader::download finished\n");
+    m_pDownloadCallback->onDownloadFinished(announcements);
+    m_isDownloading = false;
 }

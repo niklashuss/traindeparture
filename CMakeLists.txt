@@ -20,14 +20,12 @@ set(SOURCES
         src/file.cpp
         src/font.cpp
         src/image.cpp
-        src/image_loader.cpp
         src/renderer.cpp
         src/application.cpp
         src/stopwatch.cpp
         ext_src/tinyxml2/tinyxml2.cpp
         src/main.cpp
-        src/sleep.cpp
-        src/client.cpp src/client.h src/webclient.cpp src/webclient.h src/trainannouncementparser.cpp src/trainannouncementparser.h src/trainannouncement.h src/actionobject.cpp src/actionobject.h src/blockingqueue.cpp src/blockingqueue.h src/trainannouncementdownloader.cpp src/trainannouncementdownloader.h src/texture.cpp src/texture.h)
+        src/client.cpp src/client.h src/webclient.cpp src/webclient.h src/trainannouncementparser.cpp src/trainannouncementparser.h src/trainannouncement.h src/trainannouncementdownloader.cpp src/trainannouncementdownloader.h src/texture.cpp src/texture.h)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 
