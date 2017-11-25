@@ -1,5 +1,4 @@
 #include "application.h"
-#include <thread>
 #include "renderer.h"
 #include "font.h"
 #include "file.h"
@@ -40,9 +39,9 @@ void update_time(Font& font, Text& time, const char* text, Application* pApplica
 
 const char* FONT_NAME = "../res/FreeSansBold.ttf";
 const char* AUTH_KEY_NAME = "../res/auth_key.txt";
-const int UPDATE_TIME = 5 * 60;
+const int UPDATE_TIME = 1 * 10;
 
-class Game : public Application, IDownloadCallback {
+class MainApplication : public Application, IDownloadCallback {
 public:
     void onInit() {
         bool authKeyFileExists = File::exists(AUTH_KEY_NAME);
@@ -90,7 +89,7 @@ public:
         }
 
         int count = 3;
-        int vecSize = m_currentTrainAnnouncement.size();
+        unsigned long vecSize = m_currentTrainAnnouncement.size();
         if (vecSize < count) {
             count = vecSize;
         }
@@ -228,13 +227,13 @@ private:
 };
 
 int main(int argc, char *args[]) {
-    printf("Hello\n");
-    Game game;
-    Game::Status status = game.create(800, 480);
+    printf("Train departure V1.0\n");
+    MainApplication application;
+    MainApplication::Status status = application.create(800, 480);
 
     printf("status = %d\n", static_cast<int>(status));
-    if (status == Game::Status::Success) {
-        game.execute();
+    if (status == MainApplication::Status::Success) {
+        application.execute();
     }
 
     return 0;
