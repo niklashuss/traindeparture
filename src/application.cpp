@@ -40,6 +40,7 @@ Application::Status Application::create(int width, int height) {
     }
 
     SDL_DisableScreenSaver();
+    SDL_ShowCursor(SDL_DISABLE);
     return m_status;
 }
 void Application::handleKeyEvent(SDL_KeyboardEvent& keyEvent)
