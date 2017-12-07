@@ -82,29 +82,6 @@ public:
         m_startTime = std::chrono::steady_clock::now();
     }
 
-    void refreshTime() {
-        for (int i = 0; i < 3; i++) {
-            clear_time(*m_advertisedTexts[i]);
-            clear_time(*m_estimatedTexts[i]);
-        }
-
-        int count = 3;
-        unsigned long vecSize = m_currentTrainAnnouncement.size();
-        if (vecSize < count) {
-            count = vecSize;
-        }
-
-        for (int i = 0 ; i < count; i++) {
-            const char* advTime = m_currentTrainAnnouncement[i].advertisedTime.c_str();
-            const char* estTime = m_currentTrainAnnouncement[i].estimatedTime.c_str();
-            update_time(m_largeFont, *m_advertisedTexts[i], advTime, this);
-            if (strlen(estTime) == 0) {
-                estTime = "i tid";
-            }
-            update_time(m_mediumFont, *m_estimatedTexts[i], estTime, this);
-        }
-    }
-
     void onUpdate() {
         clear_time(*m_pCurrentTimeText);
         updateCurrentTime();
@@ -224,6 +201,30 @@ private:
         ss << sec;
         m_currentTime = ss.str();
     }
+
+    void refreshTime() {
+        for (int i = 0; i < 3; i++) {
+            clear_time(*m_advertisedTexts[i]);
+            clear_time(*m_estimatedTexts[i]);
+        }
+
+        int count = 3;
+        unsigned long vecSize = m_currentTrainAnnouncement.size();
+        if (vecSize < count) {
+            count = vecSize;
+        }
+
+        for (int i = 0 ; i < count; i++) {
+            const char* advTime = m_currentTrainAnnouncement[i].advertisedTime.c_str();
+            const char* estTime = m_currentTrainAnnouncement[i].estimatedTime.c_str();
+            update_time(m_largeFont, *m_advertisedTexts[i], advTime, this);
+            if (strlen(estTime) == 0) {
+                estTime = "i tid";
+            }
+            update_time(m_mediumFont, *m_estimatedTexts[i], estTime, this);
+        }
+    }
+
 };
 
 int main(int argc, char *args[]) {
