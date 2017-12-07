@@ -24,9 +24,9 @@ void setup_time_texture(Text& time, int width, int height, int color, Applicatio
     time.pTexture = pApplication->createStreamingTexture(width, height);
 }
 
-void clear_time(Text& time) {
-    image_clear(time.grey);
-    image_clear(time.rgb);
+void clear_time(Text* time) {
+    image_clear(time->grey);
+    image_clear(time->rgb);
 }
 
 void update_time(Font& font, Text& time, const char* text, Application* pApplication)
@@ -60,8 +60,6 @@ public:
         std::string authKey = buffer;
 
         renderer_init();
-        m_pDownloader = new TrainAnnouncementDownloader(authKey, this);
-        m_pDownloader->download();
 
         font_load(m_largeFont, FONT_NAME, 75);
         font_load(m_mediumFont, FONT_NAME, 55);
@@ -80,10 +78,12 @@ public:
 
         m_pCurrentTimeText = createText(595, 10, 256, 128, 0xff00f, m_mediumFont, "n/a");
         m_startTime = std::chrono::steady_clock::now();
+        m_pDownloader = new TrainAnnouncementDownloader(authKey, this);
+        m_pDownloader->download();
     }
 
-    void onUpdate() {
-        clear_time(*m_pCurrentTimeText);
+  void onUpdate() {
+        clear_time(m_pCurrentTimeText);
         updateCurrentTime();
         update_time(m_mediumFont, *m_pCurrentTimeText, m_currentTime.c_str(), this);
 
@@ -204,8 +204,8 @@ private:
 
     void refreshTime() {
         for (int i = 0; i < 3; i++) {
-            clear_time(*m_advertisedTexts[i]);
-            clear_time(*m_estimatedTexts[i]);
+            clear_time(m_advertisedTexts[i]);
+            clear_time(m_estimatedTexts[i]);
         }
 
         int count = 3;
@@ -224,7 +224,6 @@ private:
             update_time(m_mediumFont, *m_estimatedTexts[i], estTime, this);
         }
     }
-
 };
 
 int main(int argc, char *args[]) {

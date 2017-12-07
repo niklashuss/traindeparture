@@ -9,7 +9,7 @@
                 <EQ name="LocationSignature" value="Fv"/>
                 <OR>
                     <AND>
-                        <GT name="AdvertisedTimeAtLocation" value="$dateadd(-00:5:00)" />
+                        <GT name="AdvertisedTimeAtLocation" value="$dateadd(00:00:00)" />
                         <LT name="AdvertisedTimeAtLocation" value="$dateadd(10:00:00)" />
                     </AND>
                 </OR>
@@ -19,6 +19,7 @@
         <INCLUDE>EstimatedTimeAtLocation</INCLUDE>
         <INCLUDE>FromLocation</INCLUDE>
         <INCLUDE>ToLocation</INCLUDE>
+	<INCLUDE>Cancelled</INCLUDE>
     </QUERY>
 </REQUEST>
 

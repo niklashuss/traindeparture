@@ -64,10 +64,13 @@ void TrainAnnouncementDownloader::download() {
         return;
     }
     m_isDownloading = true;
-    m_waitForDownload.notify_one();
+    downloadTrainAnnouncement();
+    m_isDownloading = false;
+    //    m_waitForDownload.notify_one();
 }
 
 void TrainAnnouncementDownloader::run() {
+  /*
     while(m_doLoop) {
         std::unique_lock<std::mutex> lock(m_mutex);
         m_waitForDownload.wait_for(lock, std::chrono::milliseconds(100));
@@ -78,6 +81,7 @@ void TrainAnnouncementDownloader::run() {
         downloadTrainAnnouncement();
         m_isDownloading = false;
     }
+  */
 }
 
 bool TrainAnnouncementDownloader::downloadTrainAnnouncement() {
