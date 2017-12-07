@@ -58,10 +58,10 @@ public:
         }
 
         std::string authKey = buffer;
-        m_pDownloader = new TrainAnnouncementDownloader(authKey, this);
-        m_pDownloader->download();
 
         renderer_init();
+        m_pDownloader = new TrainAnnouncementDownloader(authKey, this);
+        m_pDownloader->download();
 
         font_load(m_largeFont, FONT_NAME, 75);
         font_load(m_mediumFont, FONT_NAME, 55);

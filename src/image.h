@@ -4,7 +4,7 @@ struct Image
 {
   int width;
   int height;
-  int bpp;
+  int bytesPerPixel;
   unsigned char* data;
 };
 

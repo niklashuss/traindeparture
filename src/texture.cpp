@@ -20,7 +20,7 @@ void Texture::unlock() {
 }
 
 void Texture::update(Image &image) {
-    SDL_UpdateTexture(m_pTexture, nullptr, image.data, image.bpp * image.width);
+    SDL_UpdateTexture(m_pTexture, nullptr, image.data, image.bytesPerPixel * image.width);
 }
 
 SDL_Texture* Texture::getSdlTexture() {
