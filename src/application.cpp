@@ -38,6 +38,8 @@ Application::Status Application::create(int width, int height) {
     if (m_pRenderer == nullptr) {
         return Status::CreateRendererFailed;
     }
+
+    SDL_DisableScreenSaver();
     return m_status;
 }
 void Application::handleKeyEvent(SDL_KeyboardEvent& keyEvent)
