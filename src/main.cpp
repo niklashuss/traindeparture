@@ -67,7 +67,7 @@ int getCurrentHour() {
 const char* FONT_NAME = "../res/FreeSansBold.ttf";
 const char* AUTH_KEY_NAME = "../res/auth_key.txt";
 const int UPDATE_TIME = 1 * 60;
-const int BACKLIGHT_UPDATE = 1 * 10;
+const int BACKLIGHT_UPDATE = 10 * 60;
 
 class MainApplication : public Application, IDownloadCallback {
 public:
