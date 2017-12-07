@@ -17,6 +17,26 @@ struct Text
     int color;
 };
 
+void enableBacklight() {
+    system("echo 1 > /sys/class/backlight/rpi_backlight/bl_power");
+}
+
+void disableBacklight() {
+    system("echo 1 > /sys/class/backlight/rpi_backlight/bl_power");
+}
+
+void setBrightness(int value) {
+    if (value < 0 ) {
+        value = 0;
+    }
+    if (value > 100) {
+        value = 100;
+    }
+    char buffer[256];
+    sprintf(buffer, "echo %d > /sys/class/backlight/rpi_backlight/brightness", value);
+    system(buffer);
+}
+
 void setup_time_texture(Text& time, int width, int height, int color, Application* pApplication) {
     time.grey = image_create(width, height, 1);
     time.rgb = image_create(width, height, 4);
@@ -37,10 +57,17 @@ void update_time(Font& font, Text& time, const char* text, Application* pApplica
     time.pTexture->update(time.rgb);
 }
 
+int getCurrentHour() {
+    system_clock::time_point now = system_clock::now();
+    time_t tt = system_clock::to_time_t(now);
+    tm local_tm = *localtime(&tt);
+    return local_tm.tm_hour;
+}
 
 const char* FONT_NAME = "../res/FreeSansBold.ttf";
 const char* AUTH_KEY_NAME = "../res/auth_key.txt";
-const int UPDATE_TIME = 1 * 10;
+const int UPDATE_TIME = 1 * 60;
+const int BACKLIGHT_UPDATE = 1 * 10;
 
 class MainApplication : public Application, IDownloadCallback {
 public:
@@ -79,11 +106,12 @@ public:
 
         m_pCurrentTimeText = createText(595, 10, 256, 128, 0xff00f, m_mediumFont, "n/a");
         m_startTime = std::chrono::steady_clock::now();
+        m_backlightTime = std::chrono::steady_clock::now();
         m_pDownloader = new TrainAnnouncementDownloader(authKey, this);
         m_pDownloader->download();
     }
 
-  void onUpdate() {
+    void onUpdate() {
         clear_time(m_pCurrentTimeText);
         updateCurrentTime();
         update_time(m_mediumFont, *m_pCurrentTimeText, m_currentTime.c_str(), this);
@@ -95,6 +123,19 @@ public:
             m_pDownloader->download();
         }
 
+        {
+            int hour = getCurrentHour();
+            printf("hour: %d\n", hour);
+            if (hour > 21 || hour < 5 || (hour >= 9 && hour <= 17)) {
+                disableBacklight();
+            } else {
+                timeDiff = std::chrono::duration_cast<std::chrono::seconds>(currentTime - m_backlightTime).count();
+                if (timeDiff > BACKLIGHT_UPDATE) {
+                    m_backlightTime = std::chrono::steady_clock::now();
+                    enableBacklight();
+                }
+            }
+        }
         renderer_set_clear_color(1.0f, 0.5f, 0.1f, 1.0f);
     }
 
@@ -165,7 +206,7 @@ private:
     std::vector<TrainAnnouncement> m_currentTrainAnnouncement;
     TrainAnnouncementDownloader* m_pDownloader;
     steady_clock::time_point m_startTime;
-    steady_clock::time_point m_lastUpdate;
+    steady_clock::time_point m_backlightTime;
     steady_clock::time_point m_lastDownloadTime;
     std::string m_currentTime;
 
