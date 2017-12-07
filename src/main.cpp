@@ -125,7 +125,6 @@ public:
 
         {
             int hour = getCurrentHour();
-            printf("hour: %d\n", hour);
             if (hour > 21 || hour < 5 || (hour >= 9 && hour <= 17)) {
                 disableBacklight();
             } else {
