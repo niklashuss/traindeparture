@@ -125,7 +125,7 @@ public:
 
         {
             int hour = getCurrentHour();
-            if (hour > 21 || hour < 5 || (hour >= 9 && hour <= 17)) {
+            if (hour > 21 || hour <= 5 || (hour >= 9 && hour <= 17)) {
                 disableBacklight();
             } else {
                 timeDiff = std::chrono::duration_cast<std::chrono::seconds>(currentTime - m_backlightTime).count();
