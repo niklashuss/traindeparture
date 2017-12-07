@@ -37,6 +37,7 @@ void update_time(Font& font, Text& time, const char* text, Application* pApplica
     time.pTexture->update(time.rgb);
 }
 
+
 const char* FONT_NAME = "../res/FreeSansBold.ttf";
 const char* AUTH_KEY_NAME = "../res/auth_key.txt";
 const int UPDATE_TIME = 1 * 10;
@@ -217,11 +218,21 @@ private:
         for (int i = 0 ; i < count; i++) {
             const char* advTime = m_currentTrainAnnouncement[i].advertisedTime.c_str();
             const char* estTime = m_currentTrainAnnouncement[i].estimatedTime.c_str();
-            update_time(m_largeFont, *m_advertisedTexts[i], advTime, this);
-            if (strlen(estTime) == 0) {
-                estTime = "i tid";
+            bool canceled = m_currentTrainAnnouncement[i].canceled;
+            if (!canceled) {
+                if (strlen(estTime) == 0) {
+                    estTime = "i tid";
+                    update_time(m_largeFont, *m_advertisedTexts[i], advTime, this);
+                    update_time(m_mediumFont, *m_estimatedTexts[i], estTime, this);
+                } else {
+                    update_time(m_mediumFont, *m_advertisedTexts[i], advTime, this);
+                    update_time(m_largeFont, *m_estimatedTexts[i], estTime, this);
+                }
+            } else {
+                estTime = "inställt";
+                update_time(m_mediumFont, *m_advertisedTexts[i], advTime, this);
+                update_time(m_largeFont, *m_estimatedTexts[i], estTime, this);
             }
-            update_time(m_mediumFont, *m_estimatedTexts[i], estTime, this);
         }
     }
 };

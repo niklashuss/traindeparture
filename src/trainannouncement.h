@@ -7,4 +7,5 @@ struct TrainAnnouncement {
     std::string estimatedTime;
     std::string fromLocation;
     std::string toLocation;
+    bool canceled;
 };

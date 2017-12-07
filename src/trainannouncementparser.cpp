@@ -10,6 +10,11 @@ const char* ESTIMATED_TIME = "EstimatedTimeAtLocation";
 const char* FROM_LOCATION = "FromLocation";
 const char* TO_LOCATION = "ToLocation";
 const char* LOCATION_NAME = "LocationName";
+const char* CANCELED = "Canceled";
+
+bool stringCompare(const char* a, const char* b) {
+    return strncmp(a, b, strlen(a)) == 0;
+}
 
 class XmlVisitorImpl : public XMLVisitor {
 public:
@@ -18,21 +23,26 @@ public:
 
     virtual bool VisitEnter( const XMLElement& element, const XMLAttribute*  pAttribute) {
 
-        if (strncmp(TRAIN_ANNOUNCEMENT, element.Value(), strlen(TRAIN_ANNOUNCEMENT)) == 0) {
+        if (stringCompare(TRAIN_ANNOUNCEMENT, element.Value())) {
             m_currentAnnouncement.advertisedTime = "";
             m_currentAnnouncement.estimatedTime = "";
             m_currentAnnouncement.fromLocation = "";
             m_currentAnnouncement.toLocation = "";
-        } else if (strncmp(ADVERTISED_TIME, element.Value(), strlen(ADVERTISED_TIME)) == 0) {
+        } else if (stringCompare(ADVERTISED_TIME, element.Value())) {
             std::string time = element.GetText();
             m_currentAnnouncement.advertisedTime = time.substr(11, 5);
-        } else if (strncmp(ESTIMATED_TIME, element.Value(), strlen(ESTIMATED_TIME)) == 0) {
+        } else if (stringCompare(ESTIMATED_TIME, element.Value())) {
             std::string time = element.GetText();
             m_currentAnnouncement.estimatedTime = time.substr(11, 5);
-        } else if (strncmp(FROM_LOCATION, element.Value(), strlen(FROM_LOCATION)) == 0) {
+        } else if (stringCompare(FROM_LOCATION, element.Value())) {
             m_currentAnnouncement.fromLocation = element.FirstChildElement(LOCATION_NAME)->GetText();
-        } else if (strncmp(TO_LOCATION, element.Value(), strlen(TO_LOCATION)) == 0) {
+        } else if (stringCompare(TO_LOCATION, element.Value())) {
             m_currentAnnouncement.toLocation = element.FirstChildElement(LOCATION_NAME)->GetText();
+        } else if (stringCompare(CANCELED, element.Value())) {
+            m_currentAnnouncement.canceled = false;
+            if (stringCompare("true", element.GetText())) {
+                m_currentAnnouncement.canceled = true;
+            }
         }
         return true;
     }
