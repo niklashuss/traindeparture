@@ -24,6 +24,10 @@ Client::Status Client::connect(const char* pAddress, unsigned short port) {
 
     addrinfo* addrResult = nullptr;
     int t = getaddrinfo(pAddress, "http", &hints, &addrResult);
+    if (t < 0) {
+        m_status = Status::ConnectionFailed;
+        return m_status;
+    }
 
     m_address.sin_port = port;
 
