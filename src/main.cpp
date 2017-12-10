@@ -4,8 +4,10 @@
 #include "file.h"
 #include <vector>
 #include "timetabledownloader.h"
+#include "stopwatch.h"
 #include <sstream>
-#include <backlight.h>
+#include "backlight.h"
+#include "stopwatch.h"
 
 using namespace std::chrono;
 
@@ -86,8 +88,8 @@ public:
         m_estimatedTexts[2] = createText(startX + spaceX, startY + spaceY + 200, 256, 128, 0xff00f, m_mediumFont, "n/a");
 
         m_pCurrentTimeText = createText(595, 10, 256, 128, 0xff00f, m_mediumFont, "n/a");
-        m_startTime = std::chrono::steady_clock::now();
-        m_backlightTime = std::chrono::steady_clock::now();
+        m_downloadTime.start();
+        m_backlightTime.start();
         m_pDownloader = new TimeTableDownloader(authKey, this);
         m_pDownloader->download();
     }
@@ -97,22 +99,21 @@ public:
         updateCurrentTime();
         update_time(m_mediumFont, *m_pCurrentTimeText, m_currentTime.c_str(), this);
 
-        auto currentTime = std::chrono::steady_clock::now();
-        long timeDiff = std::chrono::duration_cast<std::chrono::seconds>(currentTime - m_startTime).count();
-        if (timeDiff > UPDATE_TIME) {
-            m_startTime = std::chrono::steady_clock::now();
+        m_downloadTime.stop();
+        if (m_downloadTime.diff() > UPDATE_TIME) {
+            m_downloadTime.stop();
             m_pDownloader->download();
         }
 
-        timeDiff = std::chrono::duration_cast<std::chrono::seconds>(currentTime - m_backlightTime).count();
-        if (timeDiff > BACKLIGHT_UPDATE) {
+        m_backlightTime.stop();
+        if (m_backlightTime.diff() > BACKLIGHT_UPDATE) {
             int hour = getCurrentHour();
             if (hour > 21 || hour <= 5 || (hour >= 9 && hour <= 17)) {
                 Backlight::off();
             } else {
                 Backlight::on();
             }
-            m_backlightTime = std::chrono::steady_clock::now();
+            m_backlightTime.start();
         }
         renderer_set_clear_color(1.0f, 0.5f, 0.1f, 1.0f);
     }
@@ -155,7 +156,6 @@ public:
     }
 
     void onDownloadFinished(std::vector<Departure>& departures) {
-        m_lastDownloadTime = std::chrono::steady_clock::now();
         m_currentDeparture.clear();
         int count = 3;
         for (Departure& departure : departures) {
@@ -183,9 +183,8 @@ private:
     Font m_countDownFont;
     std::vector<Departure> m_currentDeparture;
     TimeTableDownloader* m_pDownloader;
-    steady_clock::time_point m_startTime;
-    steady_clock::time_point m_backlightTime;
-    steady_clock::time_point m_lastDownloadTime;
+    Stopwatch m_downloadTime;
+    Stopwatch m_backlightTime;
     std::string m_currentTime;
 
     ImageText* createText(int x, int y, int width, int height, int color, Font& font, const char* text) {
