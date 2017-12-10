@@ -5,10 +5,11 @@
 #include <vector>
 #include "timetabledownloader.h"
 #include <sstream>
+#include <backlight.h>
 
 using namespace std::chrono;
 
-struct Text
+struct ImageText
 {
     Image grey;
     Image rgb;
@@ -17,39 +18,19 @@ struct Text
     int color;
 };
 
-void enableBacklight() {
-    system("sudo bash -c \"echo 0 > /sys/class/backlight/rpi_backlight/bl_power\"");
-}
-
-void disableBacklight() {
-    system("sudo bash -c \"echo 1 > /sys/class/backlight/rpi_backlight/bl_power\"");
-}
-
-void setBrightness(int value) {
-    if (value < 0 ) {
-        value = 0;
-    }
-    if (value > 100) {
-        value = 100;
-    }
-    char buffer[256];
-    sprintf(buffer, "sudo bash -c \"echo %d > /sys/class/backlight/rpi_backlight/brightness\"", value);
-    system(buffer);
-}
-
-void setup_time_texture(Text& time, int width, int height, int color, Application* pApplication) {
+void setup_time_texture(ImageText& time, int width, int height, int color, Application* pApplication) {
     time.grey = image_create(width, height, 1);
     time.rgb = image_create(width, height, 4);
     time.color = color;
     time.pTexture = pApplication->createStreamingTexture(width, height);
 }
 
-void clear_time(Text* time) {
+void clear_time(ImageText* time) {
     image_clear(time->grey);
     image_clear(time->rgb);
 }
 
-void update_time(Font& font, Text& time, const char* text, Application* pApplication)
+void update_time(Font& font, ImageText& time, const char* text, Application* pApplication)
 {
     font_render(font, time.grey, text);
     image_copy(time.grey, time.rgb);
@@ -127,9 +108,9 @@ public:
         if (timeDiff > BACKLIGHT_UPDATE) {
             int hour = getCurrentHour();
             if (hour > 21 || hour <= 5 || (hour >= 9 && hour <= 17)) {
-                disableBacklight();
+                Backlight::off();
             } else {
-                enableBacklight();
+                Backlight::on();
             }
             m_backlightTime = std::chrono::steady_clock::now();
         }
@@ -140,7 +121,7 @@ public:
         renderer_clear();
         renderer_execute();
         for (int i = 0; i < 3; i++) {
-            Text* pText = m_advertisedTexts[i];
+            ImageText* pText = m_advertisedTexts[i];
             int x = static_cast<int>(pText->x + 0.5f);
             int y = static_cast<int>(pText->y + 0.5f);
             render(pText->pTexture, x, y);
@@ -182,7 +163,6 @@ public:
             {
                 break;
             }
-            printf("NIKLAS: %s", departure.advertisedTime.c_str());
             m_currentDeparture.push_back(departure);
             count--;
         }
@@ -194,9 +174,9 @@ public:
     }
 
 private:
-    Text* m_advertisedTexts[3];
-    Text* m_estimatedTexts[3];
-    Text* m_pCurrentTimeText;
+    ImageText* m_advertisedTexts[3];
+    ImageText* m_estimatedTexts[3];
+    ImageText* m_pCurrentTimeText;
 
     Font m_largeFont;
     Font m_mediumFont;
@@ -208,8 +188,8 @@ private:
     steady_clock::time_point m_lastDownloadTime;
     std::string m_currentTime;
 
-    Text* createText(int x, int y, int width, int height, int color, Font& font, const char* text) {
-        Text* pText = new Text;
+    ImageText* createText(int x, int y, int width, int height, int color, Font& font, const char* text) {
+        ImageText* pText = new ImageText;
         setup_time_texture(*pText, width, height, color, this);
         update_time(font, *pText, text, this);
         pText->x = x;
