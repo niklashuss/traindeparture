@@ -8,7 +8,7 @@ Client::~Client() {
 }
 
 Client::Status Client::connect(const char* pAddress, unsigned short port) {
-    printf("Client: setting up socket\n");
+//    printf("Client: setting up socket\n");
     m_socketDescriptor = socket(AF_INET, SOCK_STREAM, 0);
     if (m_socketDescriptor < 0) {
         m_status = Status::SocketFailed;
@@ -31,7 +31,7 @@ Client::Status Client::connect(const char* pAddress, unsigned short port) {
 
     m_address.sin_port = port;
 
-    printf("Client: trying to connect\n");
+//    printf("Client: trying to connect\n");
     if (::connect(m_socketDescriptor, addrResult->ai_addr, addrResult->ai_addrlen) < 0)
     {
         m_status = Status::ConnectionFailed;
@@ -39,7 +39,7 @@ Client::Status Client::connect(const char* pAddress, unsigned short port) {
     }
 
     freeaddrinfo(addrResult);
-    printf("Client: connect\n");
+//    printf("Client: connect\n");
     m_status = Status::Success;
     return m_status;
 }
@@ -49,7 +49,7 @@ int Client::recieve(char* pBuffer, int length) {
         return -1;
     }
 
-    printf("Client: recieve\n");
+//    printf("Client: recieve\n");
     return ::read(m_socketDescriptor, pBuffer, length);
 }
 
@@ -57,7 +57,7 @@ int Client::send(const char* pBuffer, int length) {
     if (m_status != Status::Success) {
         return -1;
     }
-    printf("Client: send\n");
+//    printf("Client: send\n");
     return ::write(m_socketDescriptor, pBuffer, length);
 }
 
