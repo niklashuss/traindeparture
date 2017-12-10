@@ -24,7 +24,21 @@ set(SOURCES
         src/application.cpp
         ext_src/tinyxml2/tinyxml2.cpp
         src/main.cpp
-        src/client.cpp src/client.h src/webclient.cpp src/webclient.h src/timetableparser.cpp src/timetableparser.h src/departure.h src/timetabledownloader.cpp src/timetabledownloader.h src/texture.cpp src/texture.h src/backlight.cpp src/backlight.h)
+        src/client.cpp
+        src/client.h
+        src/webclient.cpp
+        src/webclient.h
+        src/timetableparser.cpp
+        src/timetableparser.h
+        src/departure.h
+        src/timetabledownloader.cpp
+        src/timetabledownloader.h
+        src/texture.cpp
+        src/texture.h
+        src/backlight.cpp
+        src/backlight.h
+        src/stopwatch.cpp
+        src/stopwatch.h src/backlighthandler.cpp src/backlighthandler.h)
 
 add_executable(${PROJECT_NAME} ${SOURCES})
 

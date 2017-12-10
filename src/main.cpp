@@ -6,7 +6,7 @@
 #include "timetabledownloader.h"
 #include "stopwatch.h"
 #include <sstream>
-#include "backlight.h"
+#include "backlighthandler.h"
 #include "stopwatch.h"
 
 using namespace std::chrono;
@@ -40,13 +40,6 @@ void update_time(Font& font, ImageText& time, const char* text, Application* pAp
     time.pTexture->update(time.rgb);
 }
 
-int getCurrentHour() {
-    system_clock::time_point now = system_clock::now();
-    time_t tt = system_clock::to_time_t(now);
-    tm local_tm = *localtime(&tt);
-    return local_tm.tm_hour;
-}
-
 const char* FONT_NAME = "../res/FreeSansBold.ttf";
 const char* AUTH_KEY_NAME = "../res/auth_key.txt";
 const int UPDATE_TIME = 1 * 90;
@@ -54,6 +47,10 @@ const int BACKLIGHT_UPDATE = 5 * 60;
 
 class MainApplication : public Application, IDownloadCallback {
 public:
+    MainApplication()
+            : m_backlightHandler(BACKLIGHT_UPDATE) {
+    }
+
     void onInit() {
         bool authKeyFileExists = File::exists(AUTH_KEY_NAME);
         char buffer[33];
@@ -89,7 +86,7 @@ public:
 
         m_pCurrentTimeText = createText(595, 10, 256, 128, 0xff00f, m_mediumFont, "n/a");
         m_downloadTime.start();
-        m_backlightTime.start();
+        m_backlightHandler.init();
         m_pDownloader = new TimeTableDownloader(authKey, this);
         m_pDownloader->download();
     }
@@ -105,16 +102,8 @@ public:
             m_pDownloader->download();
         }
 
-        m_backlightTime.stop();
-        if (m_backlightTime.diff() > BACKLIGHT_UPDATE) {
-            int hour = getCurrentHour();
-            if (hour > 21 || hour <= 5 || (hour >= 9 && hour <= 17)) {
-                Backlight::off();
-            } else {
-                Backlight::on();
-            }
-            m_backlightTime.start();
-        }
+        m_backlightHandler.update();
+
         renderer_set_clear_color(1.0f, 0.5f, 0.1f, 1.0f);
     }
 
@@ -184,7 +173,7 @@ private:
     std::vector<Departure> m_currentDeparture;
     TimeTableDownloader* m_pDownloader;
     Stopwatch m_downloadTime;
-    Stopwatch m_backlightTime;
+    BacklightHandler m_backlightHandler;
     std::string m_currentTime;
 
     ImageText* createText(int x, int y, int width, int height, int color, Font& font, const char* text) {
