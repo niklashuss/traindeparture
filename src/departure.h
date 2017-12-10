@@ -2,7 +2,7 @@
 
 #include <string>
 
-struct TrainAnnouncement {
+struct Departure {
     std::string advertisedTime;
     std::string estimatedTime;
     std::string toLocation;

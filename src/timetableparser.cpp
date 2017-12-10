@@ -1,4 +1,4 @@
-#include "trainannouncementparser.h"
+#include "timetableparser.h"
 #include <tinyxml2.h>
 #include <functional>
 
@@ -22,21 +22,21 @@ public:
 
     virtual bool VisitEnter( const XMLElement& element, const XMLAttribute*  pAttribute) {
         if (stringCompare(TRAIN_ANNOUNCEMENT, element.Value())) {
-            m_currentAnnouncement.advertisedTime = "";
-            m_currentAnnouncement.estimatedTime = "";
-            m_currentAnnouncement.toLocation = "";
+            m_currentDeparture.advertisedTime = "";
+            m_currentDeparture.estimatedTime = "";
+            m_currentDeparture.toLocation = "";
         } else if (stringCompare(ADVERTISED_TIME, element.Value())) {
             std::string time = element.GetText();
-            m_currentAnnouncement.advertisedTime = time.substr(11, 5);
+            m_currentDeparture.advertisedTime = time.substr(11, 5);
         } else if (stringCompare(ESTIMATED_TIME, element.Value())) {
             std::string time = element.GetText();
-            m_currentAnnouncement.estimatedTime = time.substr(11, 5);
+            m_currentDeparture.estimatedTime = time.substr(11, 5);
         } else if (stringCompare(TO_LOCATION, element.Value())) {
-            m_currentAnnouncement.toLocation = element.FirstChildElement(LOCATION_NAME)->GetText();
+            m_currentDeparture.toLocation = element.FirstChildElement(LOCATION_NAME)->GetText();
         } else if (stringCompare(CANCELED, element.Value())) {
-            m_currentAnnouncement.canceled = false;
+            m_currentDeparture.canceled = false;
             if (stringCompare("true", element.GetText())) {
-                m_currentAnnouncement.canceled = true;
+                m_currentDeparture.canceled = true;
             }
         }
         return true;
@@ -44,40 +44,40 @@ public:
 
     virtual bool VisitExit( const XMLElement& element ) {
         if (stringCompare(TRAIN_ANNOUNCEMENT, element.Value())) {
-            bool keep = m_filterFunction(m_currentAnnouncement);
+            bool keep = m_filterFunction(m_currentDeparture);
             if (keep) {
-	      /*
+/*
                 printf("-------------------\n");
-                printf(" adv: %s\n", m_currentAnnouncement.advertisedTime.c_str());
-                printf(" est: %s\n", m_currentAnnouncement.estimatedTime.c_str());
-                printf(" to: %s\n", m_currentAnnouncement.toLocation.c_str());
-	      */
-                m_announcements.push_back(m_currentAnnouncement);
+                printf(" adv: %s\n", m_currentDeparture.advertisedTime.c_str());
+                printf(" est: %s\n", m_currentDeparture.estimatedTime.c_str());
+                printf(" to: %s\n", m_currentDeparture.toLocation.c_str());
+*/
+                m_departures.push_back(m_currentDeparture);
             }
         }
         return true;
     }
 
 public:
-    std::vector<TrainAnnouncement> getAnnouncements() {
-        return m_announcements;
+    std::vector<Departure> getDepartures() {
+        return m_departures;
     }
 
 private:
-    TrainAnnouncement m_currentAnnouncement;
-    std::vector<TrainAnnouncement> m_announcements;
+    Departure m_currentDeparture;
+    std::vector<Departure> m_departures;
     FilterFunction_t m_filterFunction;
 };
 
-TrainAnnouncementParser::TrainAnnouncementParser(std::string& text) : m_text(text) {
+TimeTableParser::TimeTableParser(std::string& text) : m_text(text) {
 }
 
-std::vector<TrainAnnouncement> TrainAnnouncementParser::parse(std::function<bool(const TrainAnnouncement&)> filterFunction) {
+std::vector<Departure> TimeTableParser::parse(std::function<bool(const Departure&)> filterFunction) {
     tinyxml2::XMLDocument doc;
     doc.Parse(m_text.c_str(), m_text.size());
     XMLElement* el = doc.FirstChildElement("RESPONSE");
     doc.SaveFile("response.txt", false);
     XmlVisitorImpl visitor(filterFunction);
     el->Accept(&visitor);
-    return visitor.getAnnouncements();
+    return visitor.getDepartures();
 }

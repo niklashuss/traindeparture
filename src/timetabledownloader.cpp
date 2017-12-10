@@ -1,10 +1,10 @@
-#include "trainannouncementdownloader.h"
+#include "timetabledownloader.h"
 #include "file.h"
-#include "trainannouncementparser.h"
+#include "timetableparser.h"
 #include "webclient.h"
 #include <chrono>
 
-static bool loadQuery(const char* pPath, std::string& query, std::string& authenticateKey) {
+static bool loadQuery(const char* pPath, std::string& query,std::string& authenticateKey) {
     printf("Loading query\n");
     if (!File::exists(pPath)) {
         query = "File not found";
@@ -42,34 +42,34 @@ static bool loadQuery(const char* pPath, std::string& query, std::string& authen
     return true;
 }
 
-TrainAnnouncementDownloader::TrainAnnouncementDownloader(std::string& authenticateKey, IDownloadCallback* pCallback)
+TimeTableDownloader::TimeTableDownloader(std::string& authenticateKey, IDownloadCallback* pCallback)
         : m_authenticateKey(authenticateKey)
         , m_pDownloadCallback(pCallback)
         , m_isDownloading(false)
-        , m_thread(&TrainAnnouncementDownloader::run, this) {
+        , m_thread(&TimeTableDownloader::run, this) {
 }
 
-TrainAnnouncementDownloader::~TrainAnnouncementDownloader() {
-    printf("TrainAnnouncementDownloader::stopping download thread\n");
+TimeTableDownloader::~TimeTableDownloader() {
+    printf("TimeTableDownloader::stopping download thread\n");
     m_waitForDownload.notify_one();
     m_doLoop = false;
     m_thread.join();
-    printf("TrainAnnouncementDownloader::download thread is finished\n");
+    printf("TimeTableDownloader::download thread is finished\n");
 }
 
-void TrainAnnouncementDownloader::download() {
-    printf("TrainAnnouncementDownloader::download()\n");
+void TimeTableDownloader::download() {
+    printf("TimeTableDownloader::download()\n");
     if (m_isDownloading) {
         printf("Already a download in queue.\n");
         return;
     }
     m_isDownloading = true;
-    downloadTrainAnnouncement();
+    downloadDepartures();
     m_isDownloading = false;
     //    m_waitForDownload.notify_one();
 }
 
-void TrainAnnouncementDownloader::run() {
+void TimeTableDownloader::run() {
   /*
     while(m_doLoop) {
         std::unique_lock<std::mutex> lock(m_mutex);
@@ -78,16 +78,16 @@ void TrainAnnouncementDownloader::run() {
             continue;
         }
         m_isDownloading = true;
-        downloadTrainAnnouncement();
+        downloadDepartures();
         m_isDownloading = false;
     }
   */
 }
 
-bool TrainAnnouncementDownloader::downloadTrainAnnouncement() {
+bool TimeTableDownloader::downloadDepartures() {
     printf("Downloading new train announcement\n");
     if (m_pDownloadCallback == nullptr) {
-        printf("TrainAnnouncementDownloader:: No callback set\n");
+        printf("TimeTableDownloader:: No callback set\n");
         m_isDownloading = false;
         return false;
     }
@@ -97,31 +97,33 @@ bool TrainAnnouncementDownloader::downloadTrainAnnouncement() {
     std::string content;
     loadQuery("../res/query_departures_frovi.txt", content, m_authenticateKey);
 
+    printf("Connecting to server\n");
     WebClient webClient;
     WebClient::Status status = webClient.connect(ADDRESS, PORT);
     switch (status) {
         case WebClient::Status::SocketFailed: {
-            std::string message = "TrainAnnouncementDownloader:: SocketFailed";
+            std::string message = "TimeTableDownloader:: SocketFailed";
             m_pDownloadCallback->onDownloadFailed(message);
             m_isDownloading = false;
             return false;
         }
 
         case WebClient::Status::ConnectionFailed: {
-            std::string message = "TrainAnnouncementDownloader:: ConnectionFailed";
+            std::string message = "TimeTableDownloader:: ConnectionFailed";
             m_pDownloadCallback->onDownloadFailed(message);
             m_isDownloading = false;
             return false;
         }
     }
 
+    printf("Sending request\n");
     std::string response;
     webClient.sendRequest(content, response);
 
-    TrainAnnouncementParser parser(response);
+    TimeTableParser parser(response);
 
-    auto filter = [](const TrainAnnouncement& announcement) {
-        std::string to = announcement.toLocation;
+    auto filter = [](const Departure& departure) {
+        std::string to = departure.toLocation;
         if (to == "Lå" ||
             to == "Hpbg" ||
             to == "Öb" ||
@@ -130,9 +132,10 @@ bool TrainAnnouncementDownloader::downloadTrainAnnouncement() {
         }
         return false;
     };
-    std::vector<TrainAnnouncement> announcements = parser.parse(filter);
+    printf("Running filter\n");
+    std::vector<Departure> announcements = parser.parse(filter);
 
-    printf("TrainAnnouncementDownloader::download finished\n");
+    printf("TimeTableDownloader::download finished\n");
     m_pDownloadCallback->onDownloadFinished(announcements);
     m_isDownloading = false;
 }

@@ -3,7 +3,7 @@
 #include "font.h"
 #include "file.h"
 #include <vector>
-#include "trainannouncementdownloader.h"
+#include "timetabledownloader.h"
 #include <sstream>
 
 using namespace std::chrono;
@@ -107,7 +107,7 @@ public:
         m_pCurrentTimeText = createText(595, 10, 256, 128, 0xff00f, m_mediumFont, "n/a");
         m_startTime = std::chrono::steady_clock::now();
         m_backlightTime = std::chrono::steady_clock::now();
-        m_pDownloader = new TrainAnnouncementDownloader(authKey, this);
+        m_pDownloader = new TimeTableDownloader(authKey, this);
         m_pDownloader->download();
     }
 
@@ -173,16 +173,17 @@ public:
     {
     }
 
-    void onDownloadFinished(std::vector<TrainAnnouncement>& announcements) {
+    void onDownloadFinished(std::vector<Departure>& departures) {
         m_lastDownloadTime = std::chrono::steady_clock::now();
-        m_currentTrainAnnouncement.clear();
+        m_currentDeparture.clear();
         int count = 3;
-        for (TrainAnnouncement& announcement : announcements) {
+        for (Departure& departure : departures) {
             if (count == 0)
             {
                 break;
             }
-            m_currentTrainAnnouncement.push_back(announcement);
+            printf("NIKLAS: %s", departure.advertisedTime.c_str());
+            m_currentDeparture.push_back(departure);
             count--;
         }
         refreshTime();
@@ -200,8 +201,8 @@ private:
     Font m_largeFont;
     Font m_mediumFont;
     Font m_countDownFont;
-    std::vector<TrainAnnouncement> m_currentTrainAnnouncement;
-    TrainAnnouncementDownloader* m_pDownloader;
+    std::vector<Departure> m_currentDeparture;
+    TimeTableDownloader* m_pDownloader;
     steady_clock::time_point m_startTime;
     steady_clock::time_point m_backlightTime;
     steady_clock::time_point m_lastDownloadTime;
@@ -245,20 +246,20 @@ private:
         for (int i = 0; i < 3; i++) {
             clear_time(m_advertisedTexts[i]);
             clear_time(m_estimatedTexts[i]);
-	    //            m_currentTrainAnnouncement[i].advertisedTime = "--:--";
-	    //            m_currentTrainAnnouncement[i].estimatedTime = "--:--";
+	    //            m_currentDeparture[i].advertisedTime = "--:--";
+	    //            m_currentDeparture[i].estimatedTime = "--:--";
         }
 
         int count = 3;
-        unsigned long vecSize = m_currentTrainAnnouncement.size();
+        unsigned long vecSize = m_currentDeparture.size();
         if (vecSize < count) {
             count = vecSize;
         }
 
         for (int i = 0 ; i < count; i++) {
-            const char* advTime = m_currentTrainAnnouncement[i].advertisedTime.c_str();
-            const char* estTime = m_currentTrainAnnouncement[i].estimatedTime.c_str();
-            bool canceled = m_currentTrainAnnouncement[i].canceled;
+            const char* advTime = m_currentDeparture[i].advertisedTime.c_str();
+            const char* estTime = m_currentDeparture[i].estimatedTime.c_str();
+            bool canceled = m_currentDeparture[i].canceled;
             if (!canceled) {
                 if (strlen(estTime) == 0) {
                     estTime = "i tid";
@@ -278,13 +279,12 @@ private:
 };
 
 int main(int argc, char *args[]) {
-    printf("Train departure V1.0\n");
+    printf("Train Departure V1.0\n");
     MainApplication application;
     MainApplication::Status status = application.create(800, 480);
     printf("status = %d\n", static_cast<int>(status));
     if (status == MainApplication::Status::Success) {
         application.execute();
     }
-
     return 0;
 }
