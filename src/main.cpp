@@ -125,13 +125,10 @@ public:
 
         timeDiff = std::chrono::duration_cast<std::chrono::seconds>(currentTime - m_backlightTime).count();
         if (timeDiff > BACKLIGHT_UPDATE) {
-	  printf("NIKLAS: time to update: %d\n", timeDiff);
             int hour = getCurrentHour();
             if (hour > 21 || hour <= 5 || (hour >= 9 && hour <= 17)) {
-	      printf("NIKLAS: disable backligth: %d\n", hour);
                 disableBacklight();
             } else {
-	      printf("NIKLAS: enable backlight: %d\n", hour);
                 enableBacklight();
             }
             m_backlightTime = std::chrono::steady_clock::now();
@@ -248,6 +245,8 @@ private:
         for (int i = 0; i < 3; i++) {
             clear_time(m_advertisedTexts[i]);
             clear_time(m_estimatedTexts[i]);
+	    //            m_currentTrainAnnouncement[i].advertisedTime = "--:--";
+	    //            m_currentTrainAnnouncement[i].estimatedTime = "--:--";
         }
 
         int count = 3;
@@ -282,9 +281,6 @@ int main(int argc, char *args[]) {
     printf("Train departure V1.0\n");
     MainApplication application;
     MainApplication::Status status = application.create(800, 480);
-
-    disableBacklight();
-    enableBacklight();
     printf("status = %d\n", static_cast<int>(status));
     if (status == MainApplication::Status::Success) {
         application.execute();

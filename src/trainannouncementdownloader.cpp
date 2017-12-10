@@ -120,7 +120,6 @@ bool TrainAnnouncementDownloader::downloadTrainAnnouncement() {
 
     TrainAnnouncementParser parser(response);
 
-    std::vector<TrainAnnouncement> announcements;
     auto filter = [](const TrainAnnouncement& announcement) {
         std::string to = announcement.toLocation;
         if (to == "Lå" ||
@@ -131,7 +130,7 @@ bool TrainAnnouncementDownloader::downloadTrainAnnouncement() {
         }
         return false;
     };
-    parser.parse(announcements, filter);
+    std::vector<TrainAnnouncement> announcements = parser.parse(filter);
 
     printf("TrainAnnouncementDownloader::download finished\n");
     m_pDownloadCallback->onDownloadFinished(announcements);
