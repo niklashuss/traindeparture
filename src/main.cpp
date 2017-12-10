@@ -18,11 +18,11 @@ struct Text
 };
 
 void enableBacklight() {
-    system("echo 1 > /sys/class/backlight/rpi_backlight/bl_power");
+    system("sudo bash -c \"echo 0 > /sys/class/backlight/rpi_backlight/bl_power\"");
 }
 
 void disableBacklight() {
-    system("echo 1 > /sys/class/backlight/rpi_backlight/bl_power");
+    system("sudo bash -c \"echo 1 > /sys/class/backlight/rpi_backlight/bl_power\"");
 }
 
 void setBrightness(int value) {
@@ -33,7 +33,7 @@ void setBrightness(int value) {
         value = 100;
     }
     char buffer[256];
-    sprintf(buffer, "echo %d > /sys/class/backlight/rpi_backlight/brightness", value);
+    sprintf(buffer, "sudo bash -c \"echo %d > /sys/class/backlight/rpi_backlight/brightness\"", value);
     system(buffer);
 }
 
@@ -66,8 +66,8 @@ int getCurrentHour() {
 
 const char* FONT_NAME = "../res/FreeSansBold.ttf";
 const char* AUTH_KEY_NAME = "../res/auth_key.txt";
-const int UPDATE_TIME = 1 * 60;
-const int BACKLIGHT_UPDATE = 10 * 60;
+const int UPDATE_TIME = 1 * 90;
+const int BACKLIGHT_UPDATE = 5 * 60;
 
 class MainApplication : public Application, IDownloadCallback {
 public:
@@ -123,17 +123,18 @@ public:
             m_pDownloader->download();
         }
 
-        {
+        timeDiff = std::chrono::duration_cast<std::chrono::seconds>(currentTime - m_backlightTime).count();
+        if (timeDiff > BACKLIGHT_UPDATE) {
+	  printf("NIKLAS: time to update: %d\n", timeDiff);
             int hour = getCurrentHour();
             if (hour > 21 || hour <= 5 || (hour >= 9 && hour <= 17)) {
+	      printf("NIKLAS: disable backligth: %d\n", hour);
                 disableBacklight();
             } else {
-                timeDiff = std::chrono::duration_cast<std::chrono::seconds>(currentTime - m_backlightTime).count();
-                if (timeDiff > BACKLIGHT_UPDATE) {
-                    m_backlightTime = std::chrono::steady_clock::now();
-                    enableBacklight();
-                }
+	      printf("NIKLAS: enable backlight: %d\n", hour);
+                enableBacklight();
             }
+            m_backlightTime = std::chrono::steady_clock::now();
         }
         renderer_set_clear_color(1.0f, 0.5f, 0.1f, 1.0f);
     }
@@ -282,6 +283,8 @@ int main(int argc, char *args[]) {
     MainApplication application;
     MainApplication::Status status = application.create(800, 480);
 
+    disableBacklight();
+    enableBacklight();
     printf("status = %d\n", static_cast<int>(status));
     if (status == MainApplication::Status::Success) {
         application.execute();
