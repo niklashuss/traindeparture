@@ -1,5 +1,4 @@
 #include "backlighthandler.h"
-#include <chrono>
 #include "backlight.h"
 
 using namespace std::chrono;
@@ -20,8 +19,12 @@ void BacklightHandler::init() {
     m_stopwatch.start();
 }
 
+void BacklightHandler::shutdown() {
+    Backlight::on();
+    Backlight::brightness(100);
+}
+#include <stdio.h>
 void BacklightHandler::update() {
-    m_stopwatch.stop();
     if (m_stopwatch.diff() > m_updateInterval) {
         int hour = getCurrentHour();
         if (hour >= 21 || hour <= 5 || (hour >= 9 && hour <= 17)) {

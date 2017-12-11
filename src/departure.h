@@ -7,4 +7,5 @@ struct Departure {
     std::string estimatedTime;
     std::string toLocation;
     bool canceled;
+    bool late;
 };

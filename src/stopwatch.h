@@ -5,7 +5,7 @@
 class Stopwatch {
 public:
     void start();
-    void stop();
+    long stop();
     long diff();
 
 private:

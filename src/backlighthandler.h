@@ -8,6 +8,7 @@ public:
 
     void init();
     void update();
+    void shutdown();
 
 private:
     int m_updateInterval;

@@ -28,6 +28,7 @@ public:
 
     Texture* createStreamingTexture(int width, int height);
     void render(Texture* pTexture, int x, int y);
+    void drawLine(Texture* pTexture, int x, int y, int width, int height);
 
 private:
     SDL_Window* m_pWindow = nullptr;

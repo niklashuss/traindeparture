@@ -25,11 +25,16 @@ public:
             m_currentDeparture.advertisedTime = "";
             m_currentDeparture.estimatedTime = "";
             m_currentDeparture.toLocation = "";
+            m_currentDeparture.late = false;
+            m_currentDeparture.canceled = false;
         } else if (stringCompare(ADVERTISED_TIME, element.Value())) {
             std::string time = element.GetText();
             m_currentDeparture.advertisedTime = time.substr(11, 5);
         } else if (stringCompare(ESTIMATED_TIME, element.Value())) {
             std::string time = element.GetText();
+            if (time.size() > 0) {
+                m_currentDeparture.late = true;
+            }
             m_currentDeparture.estimatedTime = time.substr(11, 5);
         } else if (stringCompare(TO_LOCATION, element.Value())) {
             m_currentDeparture.toLocation = element.FirstChildElement(LOCATION_NAME)->GetText();

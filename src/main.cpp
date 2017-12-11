@@ -7,7 +7,7 @@
 #include "stopwatch.h"
 #include <sstream>
 #include "backlighthandler.h"
-#include "stopwatch.h"
+#include "backlight.h"
 
 using namespace std::chrono;
 
@@ -75,14 +75,14 @@ public:
 
         int startX = 150;
         int startY = 80;
-        int spaceX = 200;
-        int spaceY = 15;
+        int spaceX = 210;
+        int spaceY = 0;
         m_advertisedTexts[0] = createText(startX + 0,     startY + 0,            256, 128, 0xff00f, m_largeFont, "n/a");
-        m_estimatedTexts[0] = createText(startX + spaceX, startY + spaceY + 0,   256, 128, 0xff00f, m_mediumFont, "n/a");
+        m_estimatedTexts[0] = createText(startX + spaceX, startY + spaceY + 0,   256, 256, 0xff00f, m_largeFont, "n/a");
         m_advertisedTexts[1] = createText(startX + 0,     startY + 100,          256, 128, 0xff00f, m_largeFont, "n/a");
-        m_estimatedTexts[1] = createText(startX + spaceX, startY + spaceY + 100, 256, 128, 0xff00f, m_mediumFont, "n/a");
+        m_estimatedTexts[1] = createText(startX + spaceX, startY + spaceY + 100, 256, 256, 0xff00f, m_largeFont, "n/a");
         m_advertisedTexts[2] = createText(startX + 0,     startY + 200,          256, 128, 0xff00f, m_largeFont, "n/a");
-        m_estimatedTexts[2] = createText(startX + spaceX, startY + spaceY + 200, 256, 128, 0xff00f, m_mediumFont, "n/a");
+        m_estimatedTexts[2] = createText(startX + spaceX, startY + spaceY + 200, 256, 156, 0xff00f, m_largeFont, "n/a");
 
         m_pCurrentTimeText = createText(595, 10, 256, 128, 0xff00f, m_mediumFont, "n/a");
         m_downloadTime.start();
@@ -104,7 +104,7 @@ public:
 
         m_backlightHandler.update();
 
-        renderer_set_clear_color(1.0f, 0.5f, 0.1f, 1.0f);
+        renderer_set_clear_color(1.0f, 0.0f, 0.0f, 0.0f);
     }
 
     void onRender() {
@@ -124,6 +124,16 @@ public:
         int x = static_cast<int>(m_pCurrentTimeText->x + 0.5f);
         int y = static_cast<int>(m_pCurrentTimeText->y + 0.5f);
         render(m_pCurrentTimeText->pTexture, x, y);
+
+        for (int i = 0; i < 3; i++) {
+            ImageText* pText = m_advertisedTexts[i];
+            Departure* pDeparture = &m_currentDeparture[i];
+            if (pDeparture->canceled || pDeparture->late) {
+                int x = static_cast<int>(pText->x + 0.5f);
+                int y = static_cast<int>(pText->y + 37 + 0.5f);
+                drawLine(m_advertisedTexts[i]->pTexture, x, y, x + 25, 4);
+            }
+        }
     }
 
     void onShutdown() {
@@ -138,6 +148,7 @@ public:
         }
         delete m_pDownloader;
         m_pDownloader = nullptr;
+        m_backlightHandler.shutdown();
     }
 
     void onKeyEvent(int key, bool pressed)
@@ -214,8 +225,6 @@ private:
         for (int i = 0; i < 3; i++) {
             clear_time(m_advertisedTexts[i]);
             clear_time(m_estimatedTexts[i]);
-	    //            m_currentDeparture[i].advertisedTime = "--:--";
-	    //            m_currentDeparture[i].estimatedTime = "--:--";
         }
 
         int count = 3;
@@ -228,18 +237,19 @@ private:
             const char* advTime = m_currentDeparture[i].advertisedTime.c_str();
             const char* estTime = m_currentDeparture[i].estimatedTime.c_str();
             bool canceled = m_currentDeparture[i].canceled;
+            bool late = m_currentDeparture[i].late;
             if (!canceled) {
-                if (strlen(estTime) == 0) {
+                if (!late) {
                     estTime = "i tid";
                     update_time(m_largeFont, *m_advertisedTexts[i], advTime, this);
-                    update_time(m_mediumFont, *m_estimatedTexts[i], estTime, this);
+                    update_time(m_largeFont, *m_estimatedTexts[i], estTime, this);
                 } else {
-                    update_time(m_mediumFont, *m_advertisedTexts[i], advTime, this);
+                    update_time(m_largeFont, *m_advertisedTexts[i], advTime, this);
                     update_time(m_largeFont, *m_estimatedTexts[i], estTime, this);
                 }
             } else {
-                estTime = "inställt";
-                update_time(m_mediumFont, *m_advertisedTexts[i], advTime, this);
+                estTime = "inst";
+                update_time(m_largeFont, *m_advertisedTexts[i], advTime, this);
                 update_time(m_largeFont, *m_estimatedTexts[i], estTime, this);
             }
         }

@@ -68,7 +68,7 @@ void Application::execute() {
         }
 
         onUpdate();
-        SDL_SetRenderDrawColor(m_pRenderer, 0x88, 0x88, 0xff, 0x00);
+        SDL_SetRenderDrawColor(m_pRenderer, 0x0, 0x0, 0x0, 0x0);
         SDL_RenderClear(m_pRenderer);
         onRender();
 
@@ -79,6 +79,16 @@ void Application::execute() {
 
 void Application::render(Texture* pTexture, int x, int y) {
     renderer_render(m_pRenderer, pTexture, x, y);
+}
+
+void Application::drawLine(Texture* pTexture, int x, int y, int width, int height) {
+    SDL_SetRenderDrawColor(m_pRenderer, 255, 0, 0, 0);
+    SDL_Rect rect;
+    rect.x = x;
+    rect.y = y;
+    rect.w = width;
+    rect.h = height;
+    SDL_RenderFillRect(m_pRenderer, &rect);
 }
 
 Texture* Application::createStreamingTexture(int width, int height) {
