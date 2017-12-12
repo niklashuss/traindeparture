@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <cstdio>
 
-//#define USE_BACKLIGHT
+#define USE_BACKLIGHT
 
 void Backlight::on() {
 #ifdef USE_BACKLIGHT
