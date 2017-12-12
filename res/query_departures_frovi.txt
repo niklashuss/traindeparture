@@ -5,7 +5,6 @@
             <AND>
                 <EQ name="ActivityType" value="Avgang"/>
                 <EQ name="Advertised" value="true"/>
-                <EQ name="Canceled" value="false"/>
                 <EQ name="LocationSignature" value="Fv"/>
                 <OR>
                     <AND>
@@ -19,7 +18,7 @@
         <INCLUDE>EstimatedTimeAtLocation</INCLUDE>
         <INCLUDE>FromLocation</INCLUDE>
         <INCLUDE>ToLocation</INCLUDE>
-	<INCLUDE>Cancelled</INCLUDE>
+ 	    <INCLUDE>Canceled</INCLUDE>
     </QUERY>
 </REQUEST>
 

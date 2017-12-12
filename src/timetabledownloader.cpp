@@ -102,14 +102,14 @@ bool TimeTableDownloader::downloadDepartures() {
     WebClient::Status status = webClient.connect(ADDRESS, PORT);
     switch (status) {
         case WebClient::Status::SocketFailed: {
-            std::string message = "TimeTableDownloader:: SocketFailed";
+            std::string message = "TimeTableDownloader:: SocketFailed\n";
             m_pDownloadCallback->onDownloadFailed(message);
             m_isDownloading = false;
             return false;
         }
 
         case WebClient::Status::ConnectionFailed: {
-            std::string message = "TimeTableDownloader:: ConnectionFailed";
+            std::string message = "TimeTableDownloader:: ConnectionFailed\n";
             m_pDownloadCallback->onDownloadFailed(message);
             m_isDownloading = false;
             return false;

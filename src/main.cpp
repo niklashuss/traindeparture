@@ -86,6 +86,8 @@ public:
 
         m_pCurrentTimeText = createText(595, 10, 256, 128, 0xff00f, m_mediumFont, "n/a");
         m_downloadTime.start();
+        m_backlightHandler.addOffHours(BacklightHandler::TimeSpan(0, 5));
+        m_backlightHandler.addOffHours(BacklightHandler::TimeSpan(22, 0));
         m_backlightHandler.init();
         m_pDownloader = new TimeTableDownloader(authKey, this);
         m_pDownloader->download();
@@ -96,10 +98,11 @@ public:
         updateCurrentTime();
         update_time(m_mediumFont, *m_pCurrentTimeText, m_currentTime.c_str(), this);
 
-        m_downloadTime.stop();
         if (m_downloadTime.diff() > UPDATE_TIME) {
-            m_downloadTime.stop();
-            m_pDownloader->download();
+            if (m_backlightHandler.isOn()) {
+                m_pDownloader->download();
+            }
+            m_downloadTime.start();
         }
 
         m_backlightHandler.update();
