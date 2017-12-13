@@ -134,7 +134,7 @@ public:
             if (pDeparture->canceled || pDeparture->late) {
                 int x = static_cast<int>(pText->x + 0.5f);
                 int y = static_cast<int>(pText->y + 37 + 0.5f);
-                drawLine(m_advertisedTexts[i]->pTexture, x, y, x + 25, 4);
+                drawLine(m_advertisedTexts[i]->pTexture, x, y, x + 22, 7);
             }
         }
     }
