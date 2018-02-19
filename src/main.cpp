@@ -42,8 +42,8 @@ void update_time(Font& font, ImageText& time, const char* text, Application* pAp
 
 const char* FONT_NAME = "../res/FreeSansBold.ttf";
 const char* AUTH_KEY_NAME = "../res/auth_key.txt";
-const int UPDATE_TIME = 1 * 90;
-const int BACKLIGHT_UPDATE = 5 * 60;
+const int UPDATE_TIME = 1 * 10;
+const int BACKLIGHT_UPDATE = 1 * 20;
 
 class MainApplication : public Application, IDownloadCallback {
 public:
@@ -56,7 +56,7 @@ public:
         char buffer[33];
         if (authKeyFileExists) {
             File f;
-            memset(buffer, 0, sizeof(buffer)+ 1);
+            memset(buffer, 0, sizeof(buffer));
             f.open(AUTH_KEY_NAME, FileMode::Read);
             f.read(buffer, 32);
             f.close();
@@ -87,7 +87,7 @@ public:
         m_pCurrentTimeText = createText(595, 10, 256, 128, 0xff00f, m_mediumFont, "n/a");
         m_downloadTime.start();
         m_backlightHandler.addOffHours(BacklightHandler::TimeSpan(0, 5));
-        m_backlightHandler.addOffHours(BacklightHandler::TimeSpan(22, 0));
+        m_backlightHandler.addOffHours(BacklightHandler::TimeSpan(22, 24));
         m_backlightHandler.init();
         m_pDownloader = new TimeTableDownloader(authKey, this);
         m_pDownloader->download();
@@ -127,6 +127,11 @@ public:
         int x = static_cast<int>(m_pCurrentTimeText->x + 0.5f);
         int y = static_cast<int>(m_pCurrentTimeText->y + 0.5f);
         render(m_pCurrentTimeText->pTexture, x, y);
+
+        if (m_currentDeparture.size() == 0)
+        {
+            return;
+        }
 
         for (int i = 0; i < 3; i++) {
             ImageText* pText = m_advertisedTexts[i];

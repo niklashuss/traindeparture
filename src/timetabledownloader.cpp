@@ -64,24 +64,21 @@ void TimeTableDownloader::download() {
         return;
     }
     m_isDownloading = true;
-    downloadDepartures();
-    m_isDownloading = false;
-    //    m_waitForDownload.notify_one();
+    m_waitForDownload.notify_one();
 }
 
 void TimeTableDownloader::run() {
-  /*
     while(m_doLoop) {
         std::unique_lock<std::mutex> lock(m_mutex);
-        m_waitForDownload.wait_for(lock, std::chrono::milliseconds(100));
+        m_waitForDownload.wait_for(lock, std::chrono::milliseconds(1000));
+        printf("I'm awake!\n");
         if (!m_isDownloading) {
+            printf(" Hmm back to sleep!\n");
             continue;
         }
-        m_isDownloading = true;
         downloadDepartures();
         m_isDownloading = false;
     }
-  */
 }
 
 bool TimeTableDownloader::downloadDepartures() {
