@@ -5,7 +5,7 @@
 #define USE_BACKLIGHT
 
 void Backlight::on() {
-#ifdef USE_BACKLIGHT
+    #ifdef USE_BACKLIGHT
     system("sudo bash -c \"echo 0 > /sys/class/backlight/rpi_backlight/bl_power\"");
 #else
     printf("Backlight: on()\n");

@@ -77,7 +77,6 @@ void TimeTableDownloader::run() {
             continue;
         }
         downloadDepartures();
-        m_isDownloading = false;
     }
 }
 
@@ -129,10 +128,10 @@ bool TimeTableDownloader::downloadDepartures() {
         }
         return false;
     };
-    printf("Running filter\n");
     std::vector<Departure> announcements = parser.parse(filter);
 
-    printf("TimeTableDownloader::download finished\n");
     m_pDownloadCallback->onDownloadFinished(announcements);
     m_isDownloading = false;
+    printf("TimeTableDownloader::download finished\n");
+    return true;
 }
